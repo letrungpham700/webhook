@@ -44,7 +44,7 @@ def firing_alert(request):
         response = requests.post(LINE_NOTIFY_URL, headers=header, data=msg)
 
 
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def index():
     """
     Show summary information on web browser.
@@ -70,7 +70,7 @@ def webhook():
             return jsonify({'status':'bad request'}), 400
 
 
-@app.route('/logs')
+@app.route('/logs', methods=['GET', 'POST'])
 def logs():
     """
     Display logs on web browser.
@@ -80,7 +80,7 @@ def logs():
     return render_template('logs.html', text=content, name='logs')
 
 
-@app.route('/metrics')
+@app.route('/metrics', methods=['GET', 'POST'])
 def metrics():
     """
     Expose metrics for monitoring tools.
