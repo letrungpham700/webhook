@@ -15,10 +15,13 @@ cd webhook
 Set receiver of generic webhook from Alertmanager.
 
 ```yaml
+route:
+  receiver: line-noti
 receivers:
-  - name: 'line'
-    webhook_configs:
-      - url: 'http://x.x.x.x:5000/webhook'
-        http_config:
-          bearer_token: '« YOUR_LINE_API_TOKEN »'
+- name: line-noti
+  webhook_configs:
+  - url: http://x.x.x.x:5000/
+    send_resolved: true
+    http_config:
+      bearer_token: <my_token>
 ```
