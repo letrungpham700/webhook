@@ -90,4 +90,4 @@ def metrics():
 
 if __name__ == "__main__":
     manage_logs.init_log(LOG_PATH)
-    app.run(host='10.1.32.188', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
