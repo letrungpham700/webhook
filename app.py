@@ -1,7 +1,6 @@
 #!/bin/env python3
 """
 Line Notify Gateway Application
-License: MIT
 """
 
 import logging
