@@ -1,6 +1,7 @@
 #!/bin/env python3
 """
 Line Notify Gateway Application
+License: MIT
 """
 
 import logging
@@ -10,7 +11,7 @@ from flask import Flask, render_template, request, jsonify
 
 import manage_logs
 
-LOG_PATH = '/home/ltpham/line-notify.log'
+LOG_PATH = '/opt/line-notify/logs/line-notify-gateway.log'
 LINE_NOTIFY_URL = 'https://notify-api.line.me/api/notify'
 app = Flask(__name__)
 
@@ -30,21 +31,19 @@ def firing_alert(request):
     Firing alert to line notification with message payload.
     """
     if request.json['status'] == 'firing':
-        icon = "⛔⛔⛔ 😡 ⛔⛔⛔"
         status = "Firing"
         time = reformat_datetime(request.json['alerts'][0]['startsAt'])
     else:
-        icon = "🔷🔷🔷 😎 🔷🔷🔷"
         status = "Resolved"
         time = str(datetime.now().date()) + ' ' + str(datetime.now().time().strftime('%H:%M:%S'))
     header = {'Authorization':request.headers['AUTHORIZATION']}
     for alert in request.json['alerts']:
-        msg = "Alertmanger: " + icon + "\nStatus: " + status + "\nSeverity: " + alert['labels']['severity'] + "\nTime: " + time + "\nSummary: " + alert['annotations']['summary'] + "\nDescription: " + alert['annotations']['description']
+        msg = "Alertmanger: \nStatus: " + status + "\nSeverity: " + alert['labels']['severity'] + "\nTime: " + time + "\nSummary: " + alert['annotations']['summary'] + "\nDescription: " + alert['annotations']['description']
         msg = {'message': msg}
         response = requests.post(LINE_NOTIFY_URL, headers=header, data=msg)
 
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/')
 def index():
     """
     Show summary information on web browser.
@@ -70,7 +69,7 @@ def webhook():
             return jsonify({'status':'bad request'}), 400
 
 
-@app.route('/logs', methods=['GET', 'POST'])
+@app.route('/logs')
 def logs():
     """
     Display logs on web browser.
@@ -80,7 +79,7 @@ def logs():
     return render_template('logs.html', text=content, name='logs')
 
 
-@app.route('/metrics', methods=['GET', 'POST'])
+@app.route('/metrics')
 def metrics():
     """
     Expose metrics for monitoring tools.
@@ -89,4 +88,4 @@ def metrics():
 
 if __name__ == "__main__":
     manage_logs.init_log(LOG_PATH)
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0')
