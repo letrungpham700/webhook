@@ -2,24 +2,100 @@ groups:
 - name: ServiceDown
   rules:
   - alert: service_down
-    expr: up < 1
+    expr: up == 0
     for: 20s
     labels:
       severity: critical
     annotations:
-      description: "Job : {{ $labels.job }}\nIP : {{ $labels.instance }} - Value {{ .Value }}"
+      description: "Job : {{ $labels.job }}\nIP : {{ $labels.instance }} - DOWN"
       summary: "ServiceDown"
 
 #======================================================================================================
 
 groups:
-- name: ServiceDown
+- name: ServiceUP
   rules:
   - alert: service_down
-    expr: up < 1
+    expr: time() - node_boot_time_seconds < 300
     for: 20s
     labels:
       severity: critical
     annotations:
-      description: "Job: {{ $labels.job }}\nIP: {{ $labels.instance }} - {{ $value }}"
+      description: "Job: {{ $labels.job }}\nIP: {{ $labels.instance }} - UP"
       summary: "ServiceDown"
+
+#======================================================================================================
+
+name: VM-UP
+expr: time() - node_boot_time_seconds < 300
+for: 3s
+annotations:
+description: UP: {{ $labels.instance }} 
+title: Instance {{ $labels.instance }} UP
+
+#======================================================================================================
+
+name: LINUX-CPU
+expr: (round(100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[2m])) * 100)) >= 90)
+for: 10m
+labels:
+severity: Q9-critical-linuxcpu
+annotations:
+description: CPU: {{ $labels.instance }} = {{ $value }}%
+summary: Host high CPU load (instance {{ $labels.instance }})
+
+#======================================================================================================
+
+name: LINUX-DISK
+expr: (round(100 - ((node_filesystem_avail_bytes{mountpoint!="/boot"} * 100) / node_filesystem_size_bytes{mountpoint!="/boot"})) > 90 and on(instance, device, mountpoint) node_filesystem_readonly == 0 and node_filesystem_avail_bytes{mountpoint!="/boot"} < 3.221225472e+10)
+for: 2m
+labels:
+severity: Q9-critical-linuxdisk
+annotations:
+description: {{ $labels.instance }}  Device: {{ $labels.device }} = {{ $value }}%,  Mountpoint: {{ $labels.mountpoint }}  
+summary: Host out of disk space (instance {{ $labels.instance }})
+
+#======================================================================================================
+
+name: LINUX-MEMORY
+expr: (round(100 - ((node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100)) >= 90)
+for: 15m
+labels:
+severity: Q9-critical-linuxmem
+annotations:
+description: MEMORY: {{ $labels.instance }}  = {{ $value }}%
+summary: Host out of memory (instance {{ $labels.instance }})
+timestamp: {{ with query "time()" }}{{ . | first | value | humanizeTimestamp }}{{ end }}
+
+#======================================================================================================
+
+name: ErrDisk
+expr: node_filesystem_readonly{fstype!="ramfs"} == 1
+for: 2m
+labels:
+severity: Q9-critical-errdisk
+annotations:
+description: ERR DISK Ip: {{ $labels.instance }}, Mountpoint: {{ $labels.mountpoint }} 
+summary: ErrDisk (instance {{ $labels.instance }})
+
+#======================================================================================================
+
+name: PG_DOWN
+expr: pg_up == 0
+for: 1m
+labels:
+severity: GIT-Q9
+annotations:
+description: Service PG: {{ $labels.instance }} DOWN
+title: PG_DOWN {{ $labels.instance }} alert
+
+#======================================================================================================
+
+name: PG_MAX_CONNECT
+expr: pg_stat_activity_count{datname!~"template.*|postgres"} > 160
+for: 1m
+labels:
+severity: GIT-Q9
+annotations:
+description: Service PG: database {{ $labels.datname }} in {{ $labels.server }} connect = {{ $value }}
+title: PG_MAX_CONNECT {{ $labels.instance }} alert
