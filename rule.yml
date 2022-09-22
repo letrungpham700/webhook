@@ -1,0 +1,25 @@
+groups:
+- name: ServiceDown
+  rules:
+  - alert: service_down
+    expr: up < 1
+    for: 20s
+    labels:
+      severity: critical
+    annotations:
+      description: "Job : {{ $labels.job }}\nIP : {{ $labels.instance }} - Value {{ .Value }}"
+      summary: "ServiceDown"
+
+#======================================================================================================
+
+groups:
+- name: ServiceDown
+  rules:
+  - alert: service_down
+    expr: up < 1
+    for: 20s
+    labels:
+      severity: critical
+    annotations:
+      description: "Job: {{ $labels.job }}\nIP: {{ $labels.instance }} - {{ $value }}"
+      summary: "ServiceDown"
