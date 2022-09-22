@@ -11,7 +11,7 @@ from flask import Flask, render_template, request, jsonify
 
 import manage_logs
 
-LOG_PATH = '/opt/line-notify/logs/line-notify-gateway.log'
+LOG_PATH = 'logs/line-notify-gateway.log'
 LINE_NOTIFY_URL = 'https://notify-api.line.me/api/notify'
 app = Flask(__name__)
 
