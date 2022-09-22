@@ -15,14 +15,28 @@ groups:
 groups:
 - name: ServiceUP
   rules:
-  - alert: service_down
+  - alert: service_up
     expr: time() - node_boot_time_seconds < 300
     for: 20s
     labels:
       severity: critical
     annotations:
       description: "Job: {{ $labels.job }}\nIP: {{ $labels.instance }} - UP"
-      summary: "ServiceDown"
+      summary: "ServiceUP"
+
+#======================================================================================================
+
+groups:
+- name: Established
+  rules:
+  - alert: established
+    expr: node_stat_ip_established_service > 30
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      description: "Job: {{ $labels.job }}\nIP: {{ $labels.instance }}\nEstablished: {{$labels.ip}} - {{ $value }}"
+      summary: "Established"
 
 #======================================================================================================
 
