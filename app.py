@@ -38,7 +38,7 @@ def firing_alert(request):
         time = str(datetime.now().date()) + ' ' + str(datetime.now().time().strftime('%H:%M:%S'))
     header = {'Authorization':request.headers['AUTHORIZATION']}
     for alert in request.json['alerts']:
-        msg = "\n[" + status +"] - " + "Job: " + alert['annotations']['job'] + alert['annotations']['description'] + "\nTime: " + time 
+        msg = "\n[Q9" + status +"] - " + "Job: " + alert['annotations']['job'] + alert['annotations']['description'] + "\nTime: " + time 
         msg = {'message': msg}
         response = requests.post(LINE_NOTIFY_URL, headers=header, data=msg)
 # + alert['annotations']['summary'] + " " 
