@@ -113,3 +113,26 @@ severity: GIT-Q9
 annotations:
 description: Service PG: database {{ $labels.datname }} in {{ $labels.server }} connect = {{ $value }}
 title: PG_MAX_CONNECT {{ $labels.instance }} alert
+
+#======================================================================================================
+
+groups:
+- name: node-exporter.rules
+  rules:
+  - alert: NodeHasRebooted
+    annotations:
+      description: Node has rebooted
+      summary: Node {{ (or $labels.node $labels.instance) }} has rebooted {{ $value }} seconds ago.
+    expr: |
+            (time() - node_boot_time_seconds < 600) and (time() - 600 - (node_boot_time_seconds offset 10m) > 600)
+    labels:
+      severity: critical
+
+  - alert: NodeHasRebooted
+    annotations:
+      description: Node has rebooted
+      summary: Node {{ (or $labels.node $labels.instance) }} has rebooted {{ $value }} seconds ago.
+    expr: |
+            (time() - node_boot_time_seconds < 3600) and (time() - 3600 - (node_boot_time_seconds offset 60m) > 3600)
+    labels:
+      severity: warning
