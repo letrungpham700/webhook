@@ -33,12 +33,14 @@ def firing_alert(request):
     if request.json['status'] == 'firing':
         status = "Alert"
         time = reformat_datetime(request.json['alerts'][0]['startsAt'])
+        #time = str(datetime.now().date()) + ' ' + str(datetime.now().time().strftime('%H:%M:%S'))
     else:
         status = "Resolved"
         time = str(datetime.now().date()) + ' ' + str(datetime.now().time().strftime('%H:%M:%S'))
     header = {'Authorization':request.headers['AUTHORIZATION']}
     for alert in request.json['alerts']:
         msg = "\n[Q9" + status +"] - " + "Job: " + alert['annotations']['job'] + alert['annotations']['description'] + "\nTime: " + time 
+        # + "\nTimeERR: " + timeerr
         msg = {'message': msg}
         response = requests.post(LINE_NOTIFY_URL, headers=header, data=msg)
 # + alert['annotations']['summary'] + " " 
@@ -88,4 +90,4 @@ def metrics():
 
 if __name__ == "__main__":
     manage_logs.init_log(LOG_PATH)
-    app.run(host='0.0.0.0')
+    app.run(host='10.1.6.251')

@@ -30,7 +30,7 @@ groups:
 - name: Established
   rules:
   - alert: established
-    expr: node_stat_ip_established_service > 30
+    expr: node_stat_ip_established_tomcat > 7
     for: 1m
     labels:
       severity: critical
