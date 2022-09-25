@@ -1,13 +1,13 @@
 groups:
 - name: ServiceDown
   rules:
-  - alert: service_down
+  - alert: VM-DOWN
     expr: up == 0
     for: 20s
     labels:
-      severity: critical
+      severity: VM-DOWN
     annotations:
-      description: "Job : {{ $labels.job }}\nIP : {{ $labels.instance }} - DOWN"
+      description: "Job: {{ $labels.job }}\nIP: {{ $labels.instance }} - DOWN"
       summary: "ServiceDown"
 
 #======================================================================================================
@@ -15,11 +15,11 @@ groups:
 groups:
 - name: ServiceUP
   rules:
-  - alert: service_up
+  - alert: VM-UP
     expr: time() - node_boot_time_seconds < 300
     for: 20s
     labels:
-      severity: critical
+      severity: VM-UP
     annotations:
       description: "Job: {{ $labels.job }}\nIP: {{ $labels.instance }} - UP"
       summary: "ServiceUP"
