@@ -7,8 +7,8 @@ import json
 
 
 app = Flask(__name__)
-TOKEN_GL = "9T53aaAU5Xvvu7VI7n8dxHvwAgpFXcsi20b4iNzqW9a"
-TOKEN_TEST = "SvP2mdmsRNyaFd4b0GL3kGDDGwGZtay7cH5yD50srmC"
+TOKEN_GL = ""
+TOKEN_TEST = ""
 FILE = "/home/pthiep/log"
 FILE1 = "/home/pthiep/ip-vpn"
 URL = "https://notify-api.line.me/api/notify"
