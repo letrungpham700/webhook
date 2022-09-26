@@ -31,14 +31,15 @@ def firing_alert(request):
     Firing alert to line notification with message payload.
     """
     if request.json['status'] == 'firing':
-        status = "Firing"
+        status = "Alert"
+#        time = reformat_datetime(request.json['alerts'][0]['startsAt'])
         time = str(datetime.now().date()) + ' ' + str(datetime.now().time().strftime('%H:%M:%S'))
     else:
         status = "Resolved"
         time = str(datetime.now().date()) + ' ' + str(datetime.now().time().strftime('%H:%M:%S'))
     header = {'Authorization':request.headers['AUTHORIZATION']}
     for alert in request.json['alerts']:
-        msg = "\n[Q9" + status +"] - " + "Job: " + alert['annotations']['job'] + alert['annotations']['description'] + "\nTime: " + time
+        msg = "\n[Q9-" + status +"] " + alert['annotations']['summary'] + " " + alert['annotations']['description'] + "\nTime: " + time 
         msg = {'message': msg}
         response = requests.post(LINE_NOTIFY_URL, headers=header, data=msg)
 
@@ -85,7 +86,7 @@ def metrics():
     Expose metrics for monitoring tools.
     """
 
-# msg = "\n[Q9" + status +"] - " + "Job: " + alert['annotations']['job'] + alert['annotations']['description'] + "\nTime: " + time
+
 if __name__ == "__main__":
     manage_logs.init_log(LOG_PATH)
     app.run(host='0.0.0.0')
