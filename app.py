@@ -11,7 +11,7 @@ from flask import Flask, render_template, request, jsonify
 
 import manage_logs
 
-LOG_PATH = '/opt/webhook/logs/line-notify-gateway.log'
+LOG_PATH = 'logs/line-notify-gateway.log'
 LINE_NOTIFY_URL = 'https://notify-api.line.me/api/notify'
 app = Flask(__name__)
 
@@ -31,20 +31,18 @@ def firing_alert(request):
     Firing alert to line notification with message payload.
     """
     if request.json['status'] == 'firing':
-        status = "Alert"
-        # time = reformat_datetime(request.json['alerts'][0]['startsAt'])
-        time = str(datetime.now().date()) + ' ' + str(datetime.now().time().strftime('%H:%M:%S'))
+        status = "Firing"
+        time = reformat_datetime(request.json['alerts'][0]['startsAt'])
     else:
         status = "Resolved"
         time = str(datetime.now().date()) + ' ' + str(datetime.now().time().strftime('%H:%M:%S'))
     header = {'Authorization':request.headers['AUTHORIZATION']}
     for alert in request.json['alerts']:
-        msg = "\n[Q9" + status +"] - " + "Job: " + alert['annotations']['job'] + alert['annotations']['description'] + "\nTime: " + time 
-        # + "\nTimeERR: " + timeerr
+        msg = "\n[Q9" + status +"] - " + "Job: " + alert['annotations']['job'] + alert['annotations']['description'] + "\nTime: " + time
         msg = {'message': msg}
         response = requests.post(LINE_NOTIFY_URL, headers=header, data=msg)
-# + alert['annotations']['summary'] + " " 
-# "\n[" + status +"] - " + alert['annotations']['description'] + "\nTime: " + time
+
+
 @app.route('/')
 def index():
     """
@@ -87,7 +85,7 @@ def metrics():
     Expose metrics for monitoring tools.
     """
 
-
+# msg = "\n[Q9" + status +"] - " + "Job: " + alert['annotations']['job'] + alert['annotations']['description'] + "\nTime: " + time
 if __name__ == "__main__":
     manage_logs.init_log(LOG_PATH)
-    app.run(host='10.1.6.251')
+    app.run(host='0.0.0.0')
