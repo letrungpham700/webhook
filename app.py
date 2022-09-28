@@ -86,7 +86,6 @@ def metrics():
     Expose metrics for monitoring tools.
     """
 
-
 if __name__ == "__main__":
     manage_logs.init_log(LOG_PATH)
     app.run(host='0.0.0.0')
