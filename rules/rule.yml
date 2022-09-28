@@ -55,7 +55,7 @@ for: 10m
 labels:
 severity: Q9-critical-linuxcpu
 annotations:
-description: CPU: {{ $labels.instance }} = {{ $value }}%
+description: "CPU: {{ $labels.instance }} = {{ $value }}%"
 summary: Host high CPU load (instance {{ $labels.instance }})
 
 #======================================================================================================
@@ -66,7 +66,7 @@ for: 2m
 labels:
 severity: Q9-critical-linuxdisk
 annotations:
-description: {{ $labels.instance }}  Device: {{ $labels.device }} = {{ $value }}%,  Mountpoint: {{ $labels.mountpoint }}  
+description: "{{ $labels.instance }}  Device: {{ $labels.device }} = {{ $value }}%,  Mountpoint: {{ $labels.mountpoint }}"  
 summary: Host out of disk space (instance {{ $labels.instance }})
 
 #======================================================================================================
