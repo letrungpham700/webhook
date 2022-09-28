@@ -17,14 +17,15 @@ LINE_NOTIFY_URL = 'https://notify-api.line.me/api/notify'
 app = Flask(__name__)
 
 
-def reformat_datetime(datetime):
+def reformat_datetime(_datetime):
     """
     Reformat of datetime to humand readable.
     """
-    datetime = datetime.split('T')
-    date = datetime[0]
-    time = datetime[1].split('.')[0]
-    return date + " " + time
+    _datetime = _datetime.split('T')
+    date = _datetime[0]
+    time = _datetime[1].split('.')[0]
+    time = datetime.datetime.strptime(str(time), "%H:%M:%S") + datetime.timedelta(hours=7)
+    return date + " " +time.strftime("%H:%M:%S")
 
 
 def firing_alert(request):
@@ -33,16 +34,16 @@ def firing_alert(request):
     """
     if request.json['status'] == 'firing':
         status = "Alert"
-#        time = reformat_datetime(request.json['alerts'][0]['startsAt'])
-        time = str(datetime.now().date()) + ' ' + str(datetime.now().time().strftime('%H:%M:%S'))
+        time = reformat_datetime(request.json['alerts'][0]['startsAt'])
+        # time = str(datetime.now().date()) + ' ' + str(datetime.now().time().strftime('%H:%M:%S'))
     else:
         status = "Resolved"
         time = str(datetime.now().date()) + ' ' + str(datetime.now().time().strftime('%H:%M:%S'))
     header = {'Authorization':request.headers['AUTHORIZATION']}
     for alert in request.json['alerts']:
-        msg = "\n[Q9-" + status +"] " + alert['annotations']['summary'] + " " + alert['annotations']['description'] + "\nTime: " + time 
+        msg = "\n[Q9-" + status +"] " + alert['annotations']['description'] + "\nTime: " + time 
         msg = {'message': msg}
-        response = requests.post(LINE_NOTIFY_URL, headers=header, data=msg, stickerPackageId=11537, stickerId=52002750)
+        response = requests.post(LINE_NOTIFY_URL, headers=header, data=msg)
 
 
 @app.route('/')
@@ -89,4 +90,4 @@ def metrics():
 
 if __name__ == "__main__":
     manage_logs.init_log(LOG_PATH)
-    app.run(host='0.0.0.0')
+    app.run(host='10.1.10.166')
