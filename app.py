@@ -6,7 +6,10 @@ License: MIT
 
 import logging
 import requests
-from datetime import datetime
+from datetime import datetime, timezone
+import dateutil.parser
+import pytz
+
 from flask import Flask, render_template, request, jsonify
 
 import manage_logs
@@ -16,14 +19,19 @@ LINE_NOTIFY_URL = 'https://notify-api.line.me/api/notify'
 app = Flask(__name__)
 
 
-def reformat_datetime(datetime):
+def reformat_datetime(alerttime):
     """
     Reformat of datetime to humand readable.
     """
-    datetime = datetime.split('T')
-    date = datetime[0]
-    time = datetime[1].split('.')[0]
-    return date + " " + time
+    time_tam = dateutil.parser.parse(alerttime)
+    data_time = time_tam.strftime('%Y-%m-%d %H:%M:%S')
+    datatime = datetime.strptime(data_time, '%Y-%m-%d %H:%M:%S')
+    utc = pytz.timezone('UTC')
+    localtz = pytz.timezone('Asia/Ho_Chi_Minh')
+    utctime = utc.localize(datatime)
+    data = localtz.normalize(utctime.astimezone(localtz))
+    timedate = data.strftime('%Y-%m-%d %H:%M:%S')
+    return timedate
 
 
 def firing_alert(request):
