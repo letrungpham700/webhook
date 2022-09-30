@@ -40,8 +40,8 @@ def firing_alert(request):
     """
     if request.json['status'] == 'firing':
         status = "Alert"
-#        time = reformat_datetime(request.json['alerts'][0]['startsAt'])
-        time = str(datetime.now().date()) + ' ' + str(datetime.now().time().strftime('%H:%M:%S'))
+        time = reformat_datetime(request.json['alerts'][0]['startsAt'])
+        # time = str(datetime.now().date()) + ' ' + str(datetime.now().time().strftime('%H:%M:%S'))
     else:
         status = "Resolved"
         time = str(datetime.now().date()) + ' ' + str(datetime.now().time().strftime('%H:%M:%S'))
