@@ -38,6 +38,18 @@ groups:
       description: "Job: {{ $labels.job }}\nIP: {{ $labels.instance }}\nEstablished: {{$labels.ip}} - {{ $value }}"
       summary: "Established"
 
+
+- name: DISK
+  rules:
+  - alert: high disk
+    expr: (node_filesystem_avail_bytes * 100) / node_filesystem_size_bytes{mountpoint="/"} < 70 or node_filesystem_avail_bytes{mountpoint="/"}/(1024^3) < 3
+    for: 1s
+    labels:
+      severity: nghiem trong
+    annotations:
+      description: "Host {{ $labels.instance }} , \n % disk free  = {{ $value|humanize }}% , \n dung luong disk free = {{ printf `node_filesystem_avail_bytes{instance='%s',mountpoint='/'}` $labels.instance | query | first | value | humanize1024}}B < 5GiB"```
+
+
 #======================================================================================================
 
 name: VM-UP
@@ -61,7 +73,7 @@ summary: Host high CPU load (instance {{ $labels.instance }})
 #======================================================================================================
 
 name: LINUX-DISK
-expr: (round(100 - ((node_filesystem_avail_bytes{mountpoint!="/boot"} * 100) / node_filesystem_size_bytes{mountpoint!="/boot"})) > 90 and on(instance, device, mountpoint) node_filesystem_readonly == 0 and node_filesystem_avail_bytes{mountpoint!="/boot"} < 3.221225472e+10)
+expr: (round(100 - ((node_filesystem_avail_bytes{mountpoint!= "/boot"} * 100) / node_filesystem_size_bytes{mountpoint!="/boot"})) > 90 and on(instance, device, mountpoint) node_filesystem_readonly == 0 and node_filesystem_avail_bytes{mountpoint!="/boot"} < 3.221225472e+10)
 for: 2m
 labels:
 severity: Q9-critical-linuxdisk
@@ -114,6 +126,38 @@ annotations:
 description: Service PG: database {{ $labels.datname }} in {{ $labels.server }} connect = {{ $value }}
 title: PG_MAX_CONNECT {{ $labels.instance }} alert
 
+name: ES_HEAP
+expr: (round(100 - (((elasticsearch_jvm_memory_max_bytes{area="heap",job="Elasticsearch"} - elasticsearch_jvm_memory_used_bytes{area="heap",job="Elasticsearch"}) / elasticsearch_jvm_memory_max_bytes{area="heap",job="Elasticsearch"}) * 100))) >= 80
+for: 1m
+labels:
+severity: Critical
+annotations:
+description: Service ES: {{ $labels.name }} HEAP USE {{ $value }}% 
+title: ES_Heap {{ $labels.instance }} alert
+
+name: Graylog_HEAP
+expr: (round(100 - (((jvm_memory_heap_max{job="Graylog"} - jvm_memory_heap_used{job="Graylog"}) / jvm_memory_heap_max{job="Graylog"}) * 100))) >= 85
+for: 1m
+labels:
+severity: critical
+annotations:
+description: Service Graylog: {{ $labels.instance }} HEAP USE {{ $value }}% 
+title: Graylog_Heap {{ $labels.instance }} alert
+
+name: ES_CPU
+expr: elasticsearch_process_cpu_percent{job="Elasticsearch"} >= 75
+for: 1m
+labels:
+severity: Critical
+annotations:
+description: Service ES: {{ $labels.name }} CPU USE {{ $value }}% 
+title: ES_CPU {{ $labels.instance }} alert
+
+
+
+
+
+
 #======================================================================================================
 
 groups:
@@ -138,7 +182,7 @@ groups:
       severity: warning
       
 #======================================================================================================
-
+#======================================================================================================
 - name: HardWare
   rules:
   - alert: Memory High

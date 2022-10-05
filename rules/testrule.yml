@@ -1,0 +1,60 @@
+groups:
+- name: Service UP-DOWN
+  rules:
+  - alert: VM-DOWN
+    expr: up == 0
+    for: 2m
+    labels:
+      severity: VM-DOWN
+    annotations:
+      description: "Job: {{ $labels.job }}\nIP: {{ $labels.instance }} - DOWN"
+      summary: "ServiceDown"
+
+  - alert: VM-UP
+    expr: time() - node_boot_time_seconds < 300
+    for: 1m
+    labels:
+      severity: VM-UP
+    annotations:
+      description: "Job: {{ $labels.job }}\nIP: {{ $labels.instance }} - UP"
+      summary: "ServiceUP"
+
+- name: Established
+  rules:
+  - alert: established-tomcat
+    expr: node_stat_ip_established_tomcat >= 7
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      description: "Job: {{ $labels.job }}\nIP: {{ $labels.instance }}\nEstablished: {{$labels.ip}} - Value: {{ $value }}"
+      summary: "Established"
+  - alert: established-service
+    expr: node_stat_ip_established_service >= 7
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      description: "Job: {{ $labels.job }}\nIP: {{ $labels.instance }}\nEstablished: {{$labels.ip}} - Value: {{ $value }}"
+      summary: "Established"
+
+- name: HardWare
+  rules:
+  - alert: Memory High
+    expr: (100-node_memory_MemAvailable_bytes/node_memory_MemTotal_bytes*100) >= 70
+    for: 5m
+    labels:
+      severity: Memory
+    annotations:
+      description: "Job: {{ $labels.job }}\nIP: {{ $labels.instance }}\nMemory load: {{ $value | humanize }}%"
+      value: High({{ $value }})
+      summary: "Memory High"
+
+  - alert: CPU High
+    expr: (100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[2m])) * 100)) >= 70
+    for: 5m
+    labels:
+      severity: CPU
+    annotations:
+      description: "Job: {{ $labels.job }}\nIP: {{ $labels.instance }}\nCPU load: {{ $value | humanize }}%"
+      summary: "CPU High"
