@@ -39,15 +39,15 @@ groups:
       summary: "Established"
 
 
-- name: DISK
+- name: DISK VM
   rules:
-  - alert: high disk
-    expr: (node_filesystem_avail_bytes * 100) / node_filesystem_size_bytes{mountpoint="/"} < 70 or node_filesystem_avail_bytes{mountpoint="/"}/(1024^3) < 3
+  - alert: Disk High
+    expr: (node_filesystem_avail_bytes * 100) / node_filesystem_size_bytes{mountpoint="/"} <= 70 or node_filesystem_avail_bytes{mountpoint="/"}/(1024^3) < 3
     for: 1s
     labels:
-      severity: nghiem trong
+      severity: Critical-Disk High
     annotations:
-      description: "Host {{ $labels.instance }} , \n % disk free  = {{ $value|humanize }}% , \n dung luong disk free = {{ printf `node_filesystem_avail_bytes{instance='%s',mountpoint='/'}` $labels.instance | query | first | value | humanize1024}}B < 5GiB"```
+      description: "IP: {{ $labels.instance }},\nMountpoint: {{ $labels.mountpoint }} = {{ $value|humanize }}% is {{ printf `node_filesystem_avail_bytes{instance='%s',mountpoint='/'}` $labels.instance | query | first | value | humanize}}B"
 
 
 #======================================================================================================
