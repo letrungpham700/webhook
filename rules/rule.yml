@@ -48,6 +48,16 @@ groups:
       severity: Critical-Disk High
     annotations:
       description: "IP: {{ $labels.instance }},\nMountpoint: {{ $labels.mountpoint }} = {{ $value|humanize }}% is {{ printf `node_filesystem_avail_bytes{instance='%s',mountpoint='/'}` $labels.instance | query | first | value | humanize}}B"
+# (round((node_filesystem_avail_bytes{device!="tmpfs",mountpoint!="/boot"} * 100) / node_filesystem_size_bytes{device!="tmpfs",mountpoint!="/boot"}) <= 20 and on(instance, device, mountpoint) node_filesystem_readonly == 0 and (node_filesystem_avail_bytes{device!="tmpfs",mountpoint!="/boot"})/(1024^3) <=10)
+- name: DISK-SPACE
+  rules:
+  - alert: DISK-FREE
+    expr: (round((node_filesystem_avail_bytes{device!="tmpfs",mountpoint!="/boot"} * 100) / node_filesystem_size_bytes{device!="tmpfs",mountpoint!="/boot"}) <= 20 and on(instance, device, mountpoint) node_filesystem_readonly == 0 and (node_filesystem_avail_bytes{device!="tmpfs",mountpoint!="/boot"})/(1024^3) <=10)
+    for: 1m
+    labels:
+      severity: Critical-Disk Free
+    annotations:
+      description: "IP: {{ $labels.instance }}\nMountpoint: {{ $labels.mountpoint }} = {{ $value|humanize }}% is {{ printf `node_filesystem_avail_bytes{instance='%s',mountpoint='%s'}` $labels.instance $labels.mountpoint | query | first | value | humanize}}B"
 
 
 #======================================================================================================
@@ -210,7 +220,7 @@ groups:
       severity: warning
     annotations:
       summary: Host out of disk space (instance {{ $labels.instance }})
-      description: "Disk is almost full (< 10% left)  value= {{ $value | humanize }}%"
+      description: "Disk is almost full (< 10% left) value= {{ $value | humanize }}%"
   - alert: icmp_check
     expr:  probe_success == 0
     for: 30s
@@ -218,3 +228,42 @@ groups:
       type: http_health
     annotations:
       description: 'Job: {{$labels.job}} IP: {{$labels.instance}} DOWN'
+
+
+  - alert: MEMORY
+    expr: 100 - (node_memory_MemAvailable_bytes * 100 / node_memory_MemTotal_bytes) > 60
+    for: 1s
+    labels:
+      severity: warning
+    annotations:
+      description:
+       "Job: {{$labels.job}}\nHost {{ $labels.instance }}\nMEMORY: {{ $value | humanize }}% - {{ with printf `(node_memory_MemTotal_bytes{instance='%s'} - node_memory_MemAvailable_bytes{instance='%s'})/(1024^3)` $labels.instance $labels.instance | query }} {{ . | first | value | humanize }} {{ end }}GB /{{ with printf `node_memory_MemTotal_bytes{instance='%s'}/(1024^3)` $labels.instance | query }} {{ . | first | value | humanize }}GB {{ end }}"
+
+- name: HardWare
+  rules:
+  - alert: MEMORY
+    expr: (round(100 - ((node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100)) >= 90)
+    for: 5m
+    labels:
+      severity: Memory High
+    annotations:
+      description:
+       "Job: {{$labels.job}}\nIP: {{ $labels.instance }}\nMEMORY: {{ $value | humanize }}% - {{ with printf `(node_memory_MemTotal_bytes{instance='%s'} - node_memory_MemAvailable_bytes{instance='%s'})/(1024^3)` $labels.instance $labels.instance | query }} {{ . | first | value | humanize }} {{ end }}GB /{{ with printf `(round(node_memory_MemTotal_bytes{instance='%s'}/(1024^3)))` $labels.instance | query }} {{ . | first | value }}GB {{ end }}"
+
+  - alert: CPU High
+    expr: (round(100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[2m])) * 100)) >= 90)
+    for: 1m
+    labels:
+      severity: Info
+    annotations:
+      description: "Job: {{$labels.job}}\nIP: {{ $labels.instance }}\nCPU Load: {{ $value }}%"
+
+- name: DISK-SPACE
+  rules:
+  - alert: DISK-FREE
+    expr: (round((node_filesystem_avail_bytes{device!="tmpfs",mountpoint!="/boot"} * 100) / node_filesystem_size_bytes{device!="tmpfs",mountpoint!="/boot"}) <= 20 and on(instance, device, mountpoint) node_filesystem_readonly == 0 and (node_filesystem_avail_bytes{device!="tmpfs",mountpoint!="/boot"})/(1024^3) <=10)
+    for: 1m
+    labels:
+      severity: Critical-Disk Free
+    annotations:
+      description: "Job: {{$labels.job}}\nIP: {{ $labels.instance }}\nMountpoint: {{ $labels.mountpoint }} = {{ $value|humanize }}% is {{ printf `node_filesystem_avail_bytes{instance='%s',mountpoint='%s'}` $labels.instance $labels.mountpoint | query | first | value | humanize}}B"
