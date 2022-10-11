@@ -114,6 +114,14 @@ annotations:
 description: ERR DISK Ip: {{ $labels.instance }}, Mountpoint: {{ $labels.mountpoint }} 
 summary: ErrDisk (instance {{ $labels.instance }})
 
+  - alert: ErrDisk
+    expr: node_filesystem_readonly{fstype!="ramfs"} == 1
+    for: 2m
+    labels:
+      severity: ErrDisk
+    annotations:
+      description: "Job: {{$labels.job}}\nIP: {{ $labels.instance }}\nMountpoint: {{ $labels.mountpoint }} - ReadOnly"
+
 #======================================================================================================
 
 name: PG_DOWN
@@ -254,7 +262,7 @@ groups:
     expr: (round(100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[2m])) * 100)) >= 90)
     for: 1m
     labels:
-      severity: Info
+      severity: CPU High
     annotations:
       description: "Job: {{$labels.job}}\nIP: {{ $labels.instance }}\nCPU Load: {{ $value }}%"
 
@@ -264,6 +272,6 @@ groups:
     expr: (round((node_filesystem_avail_bytes{device!="tmpfs",mountpoint!="/boot"} * 100) / node_filesystem_size_bytes{device!="tmpfs",mountpoint!="/boot"}) <= 20 and on(instance, device, mountpoint) node_filesystem_readonly == 0 and (node_filesystem_avail_bytes{device!="tmpfs",mountpoint!="/boot"})/(1024^3) <=10)
     for: 1m
     labels:
-      severity: Critical-Disk Free
+      severity: Disk Free
     annotations:
       description: "Job: {{$labels.job}}\nIP: {{ $labels.instance }}\nMountpoint: {{ $labels.mountpoint }} = {{ $value|humanize }}% is {{ printf `node_filesystem_avail_bytes{instance='%s',mountpoint='%s'}` $labels.instance $labels.mountpoint | query | first | value | humanize}}B"
