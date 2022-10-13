@@ -275,3 +275,29 @@ groups:
       severity: Disk Free
     annotations:
       description: "Job: {{$labels.job}}\nIP: {{ $labels.instance }}\nMountpoint: {{ $labels.mountpoint }} = {{ $value|humanize }}% is {{ printf `node_filesystem_avail_bytes{instance='%s',mountpoint='%s'}` $labels.instance $labels.mountpoint | query | first | value | humanize}}B"
+
+
+
+
+"Job: {{ $labels.job }}\nIP: {{ $labels.instance }} - {{ if -eq $value 0 }} down {{$value}} {{end}}"
+       "Job: {{ $labels.job }}\nIP: {{ $labels.instance }}\n
+
+        {{ if eq \"$value\"  `0` }} down  {{$value}}
+
+        {{else }} up {{$value}}
+
+        {{end}}
+       "
+
+groups:
+- name: Service UP-DOWN
+  rules:
+  - alert: VM-DOWN
+    expr: up == 0
+    for: 2m
+    labels:
+      severity: VM-DOWN
+    annotations:
+      description: "Job: {{ $labels.job }}\nIP: {{ $labels.instance }}\n{{ if eq $value 0.0 }} DOWN {{ else }} UP {{ end }}"
+      summary: "ServiceDown"
+
