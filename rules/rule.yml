@@ -264,7 +264,7 @@ groups:
     labels:
       severity: CPU High
     annotations:
-      description: "Job: {{$labels.job}}\nIP: {{ $labels.instance }}\nCPU Load: {{ $value }}%"
+      description: "Job: {{$labels.job}}\nIP: {{ $labels.instance }}\nCPU Load: {{ $value }}% is {{ printf `(count(node_cpu_seconds_total{instance='%s',mode='system'}) by (instance))` $labels.instance"
 
 - name: DISK-SPACE
   rules:
