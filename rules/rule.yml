@@ -277,6 +277,15 @@ groups:
       description: "Job: {{$labels.job}}\nIP: {{ $labels.instance }}\nMountpoint: {{ $labels.mountpoint }} = {{ $value|humanize }}% is {{ printf `node_filesystem_avail_bytes{instance='%s',mountpoint='%s'}` $labels.instance $labels.mountpoint | query | first | value | humanize}}B"
 
 
+- name: DISK-Zabbix
+  rules:
+  - alert: DISK-Zabbix
+    expr: (round((node_filesystem_avail_bytes{job="Zabbix Server",instance!="172.16.38.76:9999",device!="tmpfs",mountpoint!="/boot"} * 100) / node_filesystem_size_bytes{job="Zabbix Server",instance!="172.16.38.76:9999",device!="tmpfs",mountpoint!="/boot"}) <= 20 and on(instance, device, mountpoint) node_filesystem_readonly == 0 and (node_filesystem_avail_bytes{job="Zabbix Server",instance!="172.16.38.76:9999",device!="tmpfs",mountpoint!="/boot"})/(1024^3) <=10)
+    for: 1m
+    labels:
+      severity: Disk Zabbix
+    annotations:
+      description: "Job: {{$labels.job}}\nIP: {{ $labels.instance }}\nMountpoint: {{ $labels.mountpoint }} = {{ $value|humanize }}% is {{ printf `node_filesystem_avail_bytes{instance='%s',mountpoint='%s'}` $labels.instance $labels.mountpoint | query | first | value | humanize}}B"
 
 
 "Job: {{ $labels.job }}\nIP: {{ $labels.instance }} - {{ if -eq $value 0 }} down {{$value}} {{end}}"
